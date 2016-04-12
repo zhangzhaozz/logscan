@@ -1,0 +1,9 @@
+{
+  "expression": "xxx",
+  "interval": 1,
+  "threshold": {"min": 0, "max": 0},
+  "order": 0,
+  "contacts": [
+    {"mail": "xxx"}, {"mobile": "xxxx"}
+  ]
+}

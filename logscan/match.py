@@ -1,8 +1,6 @@
 __author__ = 'zhangzhao'
 
 from queue import Queue
-import threading
-import logging
 import re
 
 
@@ -23,14 +21,13 @@ class Token:
     def __repr__(self):
         return self.__str__()
 
-# 定义AST树类
+
 class ASTree:
     def __init__(self, token):
         self.root = token
         self.left = None
         self.right = None
 
-    # 层序遍历
     def visit(self):
         ret = []
         q = Queue()
@@ -44,7 +41,7 @@ class ASTree:
                 q.put(t.right)
         return ret
 
-# 定义生成tokenzie函数
+
 def tokenize(origin):
     tokens = []
     expr = []
@@ -71,7 +68,7 @@ def tokenize(origin):
             expr.append(c)
     return tokens
 
-# 定义生成子树函数
+
 def make_sub_ast(stack, t):
     current = t
     while stack and stack[-1].root.type != Token.LEFT_BRACKETS:
@@ -111,6 +108,7 @@ def make_ast(tokens):
             make_sub_ast(stack, sub_tree)
     return stack.pop()
 
+
 # 定义运算函数
 def cacl(ast, line):
     if ast.root.type != Token.EXPRESSION:
@@ -123,29 +121,17 @@ def cacl(ast, line):
     else:
         return re.search(ast.root.value, line) is not None
 
+
 # 调用以上类和方法,返回匹配结果bool值
 class Matcher:
-    def __init__(self, name, origin):
+    def __init__(self, name, origin, order):
         self.name = name
+        self.order = order
         self.origin = origin
         self.ast = make_ast(tokenize(origin))
 
-    # 定义match方法
     def match(self, line):
         return cacl(self.ast, line)
 
-
-if __name__ == '__main__':
-    e = '#test# & #abc# | (!#123# | #456#)'
-    s = 'test cdf 123 156'
-    # print(tokenize(e))
-    # print([str(x) for x in tokenize(e)])
-    # for t in tokenize(e):
-    #     print(t)
-
-    # ast = make_ast(tokenize(e))
-    # # print(ast.visit())
-    # print(cacl(ast, s))
-
-    m = Matcher(e)
-    print(m.match(s))
+    def __eq__(self, other):
+        return self.name == other.name

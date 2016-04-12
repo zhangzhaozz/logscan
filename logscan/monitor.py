@@ -7,7 +7,6 @@ from .check import Checker
 from .rule import Rule
 
 
-
 class Monitor:
     def __init__(self, queue, counter, notifier):
         self.matcher_list = []
@@ -62,7 +61,7 @@ class Monitor:
                 pass
 
     def start(self):
-        self.__thread = threading.Thread(target=self.__do_match)
+        self.__thread = threading.Thread(target=self.__do_matcher)
         self.__thread.daemon = True
         self.__thread.start()
 

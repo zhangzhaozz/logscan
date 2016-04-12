@@ -1,27 +1,44 @@
 __author__ = 'zhangzhao'
 
 import os
-from queue import Queue
+from queue import Queue, Full
 from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
-from .check import CheckerChain
+import logging
+from datetime import datetime
+from .monitor import Monitor
 
 
-class Watcher(FileSystemEventHandler):
-    def __init__(self, filename, counter):
-        # 获取文件的绝对路径
+class WatcherHandler(FileSystemEventHandler):
+    def __init__(self, filename, counter, notifier, offset_db, queue_len=1000):
         self.filename = os.path.abspath(filename)
-        # 保存matcher对象
-        # self.matcher = Matcher(checker.name, checker.expr)
-        # self.checker = checker
-        self.queue = Queue()
-        self.check_chain = CheckerChain(self.queue, counter)
-        self.observer = Observer()
+        self.queue = Queue(queue_len)
+        self.counter = counter
+        self.monitor = Monitor(self.queue, counter, notifier)
+        self.offset_db = offset_db
         self.fd = None
         self.offset = 0
+        self.timer = datetime.datetime.now()
         if os.path.isfile(self.filename):
             self.fd = open(self.filename)
-            self.offset = os.path.getsize(self.filename)
+            offset = self.offset_db.get(self.filename)
+            file_size = os.path.getsize(self.filename)
+            if offset < 0:
+                self.offset = file_size
+            else:
+                if offset <= file_size:
+                    self.offset = offset
+                else:
+                    self.offset = 0
+
+    def start(self):
+        self.monitor.start()
+
+    def stop(self):
+        if self.fd is not None and not self.fd.closed:
+            self.fd.close()
+        self.monitor.stop()
+        self.offset_db.put(self.filename, self.offset)
+        self.offset_db.sync()
 
     def on_moved(self, event):
         if os.path.abspath(event.src_path) == self.filename:
@@ -36,52 +53,29 @@ class Watcher(FileSystemEventHandler):
             self.offset = os.path.getsize(self.filename)
 
     def on_modified(self, event):
+        now = datetime.now()
         if os.path.abspath(event.src_path) == self.filename:
             self.fd.seek(self.offset, 0)
-            # match = getattr(self.matcher, 'match', lambda x: False)
             for line in self.fd:
                 line = line.rstrip('\n')
-                self.queue.put(line)
-                # if self.matcher.match(line):
-                #     # print('matched {0}'.format(line))
-                #     if self.counter is not None:
-                #         self.counter.inc(self.matcher.name)
+                try:
+                    self.queue.put_nowait(line)
+                except Full:
+                    logging.warning('queue overflow')
             self.offset = self.fd.tell()
+        if (now - self.timer).seconds > 30:
+            self.offset_db.put(self.filename, self.offset)
+            self.timer = now
 
     def on_deleted(self, event):
         if os.path.abspath(event.src_path) == self.filename:
             self.fd.close()
 
-    def start(self):
-        self.check_chain.start()
-        self.observer.schedule(self, os.path.dirname(self.filename), recursive=False)
-        self.observer.start()
-        self.observer.join()
+    def __eq__(self, other):
+        return self.filename == other.filename
 
-    def stop(self):
-        self.check_chain.stop()
-        self.observer.stop()
-        if self.fd is not None and not self.fd.closed:
-            self.fd.close()
+    def __ne__(self, other):
+        return self.filename == other.filename
 
-
-if __name__ == '__main__':
-    import sys
-    import threading
-
-    class Matcher:
-        def match(self, line):
-            return True
-
-    w = Watcher(sys.argv[1], Matcher())
-    w2 = Watcher(sys.argv[2], Matcher())
-
-    try:
-        # w.start()
-        t1 = threading.Thread(target=w.start)
-        t1.start()
-        t2 = threading.Thread(target=w2.start)
-        t2.start()
-    except KeyboardInterrupt:
-        w.stop()
-        w2.stop()
+    def __hash__(self):
+        return hash(self.filename)

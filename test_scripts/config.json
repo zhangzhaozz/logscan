@@ -1,8 +1,0 @@
-{
-  "name": "test",
-  "expr": "#test#",
-  "path": "/tmp/test.log",
-  "interval": 1,
-  "threshold": [1, -1],
-  "users": ["a@b.com"]
-}
