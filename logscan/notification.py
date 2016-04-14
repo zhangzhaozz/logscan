@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   count          BIGINT        NOT NULL,
   contact        TEXT          NOT NULL,
   receive_time   DATETIME      NOT NULL,
-  is_send        BOOLEAN       NOT NULL DEFAULT FALSE,
+  is_send        BOOLEAN       NOT NULL DEFAULT FALSE
 )
 '''
 
@@ -60,7 +60,7 @@ class Notifier:
             logging.error('init notification error, {0}'.format(e))
 
     def notify(self, message):
-        sql = r'INSERT INTO notifications (name, count, contact, receive_time) value (?, ?, ?, ?)'
+        sql = r'INSERT INTO notifications (name, count, contact, receive_time) VALUES (?, ?, ?, ?)'
         try:
             ret = self.cursor.execute(sql, (message.name, message.count,
                                             message.contact.dumps(), message.receive_time))

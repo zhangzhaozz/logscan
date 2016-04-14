@@ -54,7 +54,7 @@ class Monitor:
             try:
                 line = self.queue.get(timeout=0.1)
                 for matcher in self.matcher_list:
-                    if matcher.matcher(line):
+                    if matcher.match(line):
                         self.counter.inc(matcher.name)
                         break
             except Empty:
