@@ -28,7 +28,7 @@ class Schedule:
             handler = WatcherHandler(filename, counter=self.counter,
                                      notifier=self.notifier, offset_db=self.offset_db)
             if path.dirname(handler.filename) not in self.watchers.keys():
-                self.watcher[path.dirname(handler.filename)] = self.observer.schedule(handler,
+                self.watchers[path.dirname(handler.filename)] = self.observer.schedule(handler,
                                                                                       path.dirname(handler.filename),
                                                                                       recursive=False)
             else:

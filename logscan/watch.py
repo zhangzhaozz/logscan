@@ -17,7 +17,7 @@ class WatcherHandler(FileSystemEventHandler):
         self.offset_db = offset_db
         self.fd = None
         self.offset = 0
-        self.timer = datetime.datetime.now()
+        self.timer = datetime.now()
         if os.path.isfile(self.filename):
             self.fd = open(self.filename)
             offset = self.offset_db.get(self.filename)

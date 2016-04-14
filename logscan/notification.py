@@ -116,7 +116,7 @@ class Notifier:
         s = threading.Thread(target=self.__send, name='notifier-send')
         s.daemon = True
         s.start()
-        c = threading.Thread(target=self.__compensate, name='notifier-compensation')
+        c = threading.Thread(target=self.__compensation, name='notifier-compensation')
         c.daemon = True
         c.start()
 
