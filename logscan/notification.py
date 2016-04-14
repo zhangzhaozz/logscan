@@ -12,6 +12,9 @@ class MailSender:
     def __init__(self, config):
         self.config = config
 
+    def send(self, message):
+        pass
+
 
 class SmsSender:
     def __init__(self, config):
@@ -79,7 +82,7 @@ class Notifier:
     def __send(self):
         while not self.__event.is_set():
             try:
-                row_id = self.__queue.get(timeout=100)
+                row_id = self.__queue.get(timeout=0.1)
                 self.cursor.execute(r'SELECT name, count, contact, receive_time, is_sender '
                                     r'FROM notifications WHERE rowid=?',
                                     (row_id, ))
@@ -93,7 +96,7 @@ class Notifier:
                                          name='sender-{0}'.format(sender.__name__))
                     t.daemon = True
                     t.start()
-                self.cursor.execute(r'UPDATE notification SET is_send=? WHERE rowid=?', (True, row_id))
+                self.cursor.execute(r'UPDATE notifications SET is_send=? WHERE rowid=?', (True, row_id))
                 self.db.commit()
             except Empty:
                 pass

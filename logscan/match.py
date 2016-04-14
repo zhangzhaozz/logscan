@@ -109,7 +109,6 @@ def make_ast(tokens):
     return stack.pop()
 
 
-# 定义运算函数
 def cacl(ast, line):
     if ast.root.type != Token.EXPRESSION:
         if ast.root.value == '!':
@@ -122,7 +121,6 @@ def cacl(ast, line):
         return re.search(ast.root.value, line) is not None
 
 
-# 调用以上类和方法,返回匹配结果bool值
 class Matcher:
     def __init__(self, name, origin, order):
         self.name = name

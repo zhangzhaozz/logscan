@@ -49,7 +49,7 @@ class Monitor:
         self.__remove_matcher(name)
         self.__remove_checker(name)
 
-    def __do_matcher(self):
+    def __do_match(self):
         while not self.__event.is_set():
             try:
                 line = self.queue.get(timeout=0.1)
@@ -61,7 +61,7 @@ class Monitor:
                 pass
 
     def start(self):
-        self.__thread = threading.Thread(target=self.__do_matcher)
+        self.__thread = threading.Thread(target=self.__do_match)
         self.__thread.daemon = True
         self.__thread.start()
 

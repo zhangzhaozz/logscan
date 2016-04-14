@@ -29,8 +29,8 @@ class Schedule:
                                      notifier=self.notifier, offset_db=self.offset_db)
             if path.dirname(handler.filename) not in self.watchers.keys():
                 self.watchers[path.dirname(handler.filename)] = self.observer.schedule(handler,
-                                                                                      path.dirname(handler.filename),
-                                                                                      recursive=False)
+                                                                                       path.dirname(handler.filename),
+                                                                                       recursive=False)
             else:
                 watch = self.watchers[path.dirname(handler.filename)]
                 self.observer.add_handler_for_watch(handler, watch)
@@ -40,7 +40,7 @@ class Schedule:
     def remove_watcher(self, filename):
         key = self.__make_key(filename)
         handler = self.handlers.pop(key)
-        if handler is None:
+        if handler is not None:
             watch = self.watchers[path.dirname(key)]
             self.observer.remove_handler_for_watch(handler, watch)
             handler.stop()
